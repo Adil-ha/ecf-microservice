@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # Service d'authentification
+  authentication-service:
+    build:
+      context: ./server/authentication-service
+    ports:
+      - "8081:8081"
+    networks:
+      - microservices_network
+
+  # Service de données commun
+  common-data-service:
+    build:
+      context: ./server/common-data-service
+    ports:
+      - "8082:8082"
+    networks:
+      - microservices_network
+
+  # Service de paiement
+  payment-service:
+    build:
+      context: ./server/payment-service
+    ports:
+      - "8083:8083"
+    networks:
+      - microservices_network
+
+  # Service de recherche
+  search-service:
+    build:
+      context: ./server/search-suggestion-service
+    ports:
+      - "8084:8084"
+    networks:
+      - microservices_network
+
+  # Interface utilisateur React
+  frontend:
+    build:
+      context: ./client
+    ports:
+      - "3000:80"
+    networks:
+      - microservices_network
+
+  # MySQL
+  mysql:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: your_database_name
+      MYSQL_PASSWORD: root
+    ports:
+      - "3307:3306"
+    networks:
+      - microservices_network
+
+  # PhpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+    ports:
+      - "8090:80"
+    depends_on:
+      - mysql
+    networks:
+      - microservices_network
+
+networks:
+  microservices_network:
+    driver: bridge

@@ -1,0 +1,19 @@
+# Ignore les fichiers et répertoires spécifiques à Maven
+target/
+*/target/
+
+# Ignore les fichiers de sauvegarde
+*~
+*.swp
+
+# Ignore les fichiers et répertoires de versionnement
+.git/
+.gitignore
+
+# Ignore les fichiers de configuration spécifiques à l'IDE
+.idea/
+.vscode/
+
+# Ignore les fichiers de test
+/test/
+*/test/
