@@ -1,5 +1,6 @@
 # Build de l'application avec maven
-FROM maven AS builder
+FROM maven:3.6.0-jdk-11 AS builder
+ 
 
 WORKDIR /app
 
@@ -12,15 +13,15 @@ COPY src ./src
 RUN mvn package -DskipTests
 
 
-FROM openjdk
+FROM openjdk:11
 
 WORKDIR /app
 
 # copie de l'artifact JAR depuis l'etape precedente ( artifactid-version )
-COPY --from=builder /app/target/common-data-service-0.0.1-SNAPSHOT.jar .
+COPY --from=builder /app/target/common-data-service.jar .
 
-EXPOSE 8082
+EXPOSE 9000
 
 
 # Execution de l'application
-ENTRYPOINT ["java","-jar","common-data-service-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java","-jar","common-data-service.jar"]

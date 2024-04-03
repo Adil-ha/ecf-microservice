@@ -11,8 +11,8 @@
     <groupId>com.example</groupId>
     <artifactId>search-suggestion-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>search-suggestion-service</name>
-    <description>search-suggestion-service</description>
+    <name>search-suggestion-srevice</name>
+    <description>search-suggestion-srevice</description>
     <properties>
         <java.version>17</java.version>
     </properties>

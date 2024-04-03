@@ -1,39 +1,98 @@
 version: '3.8'
 
 services:
+  # MySQL
+  bdd:
+    container_name: bdd
+    image: mysql:8
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: ecf
+      MYSQL_PASSWORD: password
+    networks:
+      - microservices_network
+
+  # PhpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin
+    depends_on:
+      - bdd
+    restart: always
+    ports:
+      - "8090:80"
+    environment:
+      PMA_HOST: bdd
+    networks:
+      - microservices_network
+
+  # Redis
+  redis:
+    container_name: redis
+    image: redis:7.2
+    volumes:
+      - db_data:/data
+    ports:
+      - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning --requirepass mypass
+    networks:
+      - microservices_network
+
   # Service d'authentification
-  authentication-service:
+  authentication:
+    ports:
+      - "7000:7000"
+    environment:
+      - PORT=7000
+      - ACTIVE_PROFILE=dev
+      - DB_HOST=bdd
+      - DB_PORT=3306
+      - DB_SCHEMA=ecf
+      - DB_USER=root
+      - DB_PASS=password
     build:
       context: ./server/authentication-service
-    ports:
-      - "8081:8081"
+    depends_on:
+      - bdd
     networks:
       - microservices_network
 
   # Service de données commun
-  common-data-service:
+  common-data:
+    ports:
+      - "9000:9000"
+    environment:
+      - PORT=9000
+      - ACTIVE_PROFILE=dev
+      - DB_HOST=bdd
+      - DB_PORT=3306
+      - DB_SCHEMA=ecf
+      - DB_USER=root
+      - DB_PASS=password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=mypass
     build:
       context: ./server/common-data-service
-    ports:
-      - "8082:8082"
+    depends_on:
+      - bdd
     networks:
       - microservices_network
 
   # Service de paiement
-  payment-service:
+  payment:
+    ports:
+      - "9050:9050"
+    environment:
+      - PORT=9050
     build:
       context: ./server/payment-service
-    ports:
-      - "8083:8083"
-    networks:
-      - microservices_network
-
-  # Service de recherche
-  search-service:
-    build:
-      context: ./server/search-suggestion-service
-    ports:
-      - "8084:8084"
+    depends_on:
+      - bdd
     networks:
       - microservices_network
 
@@ -43,35 +102,27 @@ services:
       context: ./client
     ports:
       - "3000:80"
-    networks:
-      - microservices_network
-
-  # MySQL
-  mysql:
-    image: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: your_database_name
-      MYSQL_PASSWORD: root
-    ports:
-      - "3307:3306"
-    networks:
-      - microservices_network
-
-  # PhpMyAdmin
-  phpmyadmin:
-    image: phpmyadmin
-    container_name: phpmyadmin
-    restart: always
-    environment:
-      PMA_HOST: mysql
-    ports:
-      - "8090:80"
+      - REACT_APP_AUTHENTICATION_SERVICE_PORT=7000
+      - REACT_APP_PAYMENT_SERVICE_PORT=9050
+      - REACT_APP_COMMON_DATA_SERVICE_PORT=9000
+      - REACT_APP_COMMON_DATA_SERVICE_IP=localhost
+      - REACT_APP_AUTHENTICATION_SERVICE_URL=http://localhost:7000
+      - REACT_APP_COMMON_DATA_SERVICE_URL=http://localhost:9000
+      - REACT_APP_PAYMENT_SERVICE_URL=http://localhost:9050
+      - REACT_APP_ENVIRONMENT=dev
     depends_on:
-      - mysql
+      - authentication
+      - common-data
+      - payment
     networks:
       - microservices_network
 
 networks:
   microservices_network:
     driver: bridge
+
+volumes:
+  db_data:
+
+
