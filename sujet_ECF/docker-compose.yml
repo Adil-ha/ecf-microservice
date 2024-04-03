@@ -96,6 +96,21 @@ services:
     networks:
       - microservices_network
 
+  
+
+  # Service de recherche
+  # search-suggestion:
+  #   ports:
+  #     - "10000:10000"
+  #   environment:
+  #     - PORT=10000
+  #   build:
+  #     context: ./server/search-suggestion
+  #   depends_on:
+  #     - bdd
+  #   networks:
+  #     - microservices_network
+
   # Interface utilisateur React
   frontend:
     build:
